@@ -1,11 +1,26 @@
 from pathlib import Path
+import os
 
+# -----------------------------
+# 기본 경로 설정
+# -----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# -----------------------------
+# 보안 및 디버그
+# -----------------------------
 SECRET_KEY = 'django-insecure-#q43mc^!2o4jd4ydz%gdqkejdj*=ag7i5j4@mnofmx0lniud@a'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
+# -----------------------------
+# 커스텀 유저 모델
+# -----------------------------
+AUTH_USER_MODEL = 'accounts.User'
+
+# -----------------------------
+# 설치된 앱
+# -----------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -19,11 +34,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',  # 로그아웃(블랙리스트)용
     'it_test',
     'accounts',
-    'events'
+    'board',
 ]
 
-
-
+# -----------------------------
+# REST Framework 설정
+# -----------------------------
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -33,7 +49,9 @@ REST_FRAMEWORK = {
     ),
 }
 
-
+# -----------------------------
+# 미들웨어
+# -----------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -44,12 +62,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# -----------------------------
+# URL 설정
+# -----------------------------
 ROOT_URLCONF = 'hackerton_dswu.urls'
 
+# -----------------------------
+# 템플릿 설정
+# -----------------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'hackerton_dswu' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -61,8 +85,14 @@ TEMPLATES = [
     },
 ]
 
+# -----------------------------
+# WSGI 설정
+# -----------------------------
 WSGI_APPLICATION = 'hackerton_dswu.wsgi.application'
 
+# -----------------------------
+# 데이터베이스
+# -----------------------------
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -70,6 +100,9 @@ DATABASES = {
     }
 }
 
+# -----------------------------
+# 비밀번호 검증
+# -----------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -77,10 +110,23 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# -----------------------------
+# 지역화
+# -----------------------------
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+# -----------------------------
+# 정적 파일(CSS, JS, 이미지) 설정
+# -----------------------------
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),  # 프로젝트 루트 /static 폴더
+]
+
+# -----------------------------
+# 기본 자동 필드
+# -----------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

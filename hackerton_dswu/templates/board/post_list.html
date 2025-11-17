@@ -1,0 +1,25 @@
+<h1>게시글 목록</h1>
+
+{% if request.user.is_authenticated %}
+    <p>
+        {{ request.user.username }}님 환영합니다! |
+        <a href="{% url 'accounts:logout' %}">로그아웃</a>
+    </p>
+    <p><a href="{% url 'board:post_create' %}">새 글 작성</a></p>
+{% else %}
+    <p><a href="{% url 'accounts:login_page' %}">로그인</a></p>
+{% endif %}
+
+<!-- IT 테스트 링크 추가 -->
+<p><a href="{% url 'it_test:main_page' %}">IT 테스트 시작</a></p>
+
+<ul>
+{% for post in posts %}
+    <li>
+        <a href="{% url 'board:post_detail' post.pk %}">{{ post.title }}</a>
+        - 작성자: {{ post.user.username }} | 카테고리: {{ post.get_category_display }} | 좋아요: {{ post.likes.count }}
+    </li>
+{% empty %}
+    <li>게시글이 없습니다.</li>
+{% endfor %}
+</ul>

@@ -1,11 +1,14 @@
 from django.urls import path
-from .views import RegisterView, LogoutView, LoginView, TokenRefreshViewCustom, profile
+from .views import register_page, login_page, logout_view, RegisterView, LoginView
+
+app_name = 'accounts'
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),       # 회원가입
-    path('login/', LoginView.as_view(), name='login'),                 # JWT 로그인
-    path('refresh/', TokenRefreshViewCustom.as_view(), name='token_refresh'),  # 토큰 재발급
-    path('logout/', LogoutView.as_view(), name='logout'),             # 로그아웃
-    path('profile/', profile, name='profile'),                        # 로그인 상태 확인
+    path('login/', login_page, name='login_page'),
+    path('register/', register_page, name='register_page'),
+    path('logout/', logout_view, name='logout'),
+    
+    # API용 URL
+    path('api/register/', RegisterView.as_view(), name='api_register'),
+    path('api/login/', LoginView.as_view(), name='api_login'),
 ]
-

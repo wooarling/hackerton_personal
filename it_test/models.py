@@ -1,25 +1,18 @@
 # models.py
 from django.db import models
 
-# 분야 (예: 백엔드, 프론트엔드 등)
+# 분야 (백엔드, 프론트엔드 등)
 class Field(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=100, unique=True)  # 분야 이름 (예: 백엔드, 프론트엔드)
 
     def __str__(self):
         return self.name
 
-# 질문 (각 질문은 하나 이상의 분야에 속할 수 있음)
+
+# 질문
 class Question(models.Model):
-    text = models.CharField(max_length=255)
-    fields = models.ManyToManyField(Field)
+    text = models.TextField()  # 질문 내용
+    fields = models.ManyToManyField(Field, related_name='questions')  # 여러 분야에 매핑됨
 
     def __str__(self):
         return self.text
-
-# 사용자 응답 (각 질문에 대한 사용자의 응답을 저장)
-class Answer(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answer = models.CharField(max_length=10)  # '예' 또는 '아니오'
-
-    def __str__(self):
-        return f"Q{self.question.id}: {self.answer}"

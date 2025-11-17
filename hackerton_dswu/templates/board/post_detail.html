@@ -1,0 +1,28 @@
+<!-- templates/board/post_detail.html -->
+
+<h2>{{ post.title }}</h2>
+<p>작성자: {{ post.user.username }} | 카테고리: {{ post.get_category_display }} | 좋아요: {{ post.likes.count }}</p>
+<p>{{ post.content }}</p>
+
+{% if user == post.user %}
+    <!-- 수정, 삭제 버튼 -->
+    <a href="{% url 'board:post_update' post.pk %}">수정</a>
+    <form action="{% url 'board:post_delete' post.pk %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">삭제</button>
+    </form>
+{% endif %}
+
+<!-- 좋아요 토글 -->
+<form action="{% url 'board:post_like_toggle' post.pk %}" method="post" style="display:inline;">
+    {% csrf_token %}
+    {% if user in post.likes.all %}
+        <button type="submit">좋아요 취소</button>
+    {% else %}
+        <button type="submit">좋아요</button>
+    {% endif %}
+</form>
+
+<br><br>
+<!-- 목록으로 돌아가기 -->
+<a href="{% url 'board:post_list' %}">목록으로 돌아가기</a>

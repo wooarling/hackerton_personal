@@ -1,12 +1,20 @@
 [
-  {"model": "it_test.question", "pk": 1, "fields": {"text": "논리적으로 문제를 해결하는 걸 좋아한다", "fields": "백엔드"}},
-  {"model": "it_test.question", "pk": 2, "fields": {"text": "시각적인 디자인을 다루는 걸 좋아한다", "fields": "프론트엔드"}},
-  {"model": "it_test.question", "pk": 3, "fields": {"text": "시스템 보안이나 해킹 방어에 관심이 있다", "fields": "사이버보안"}},
-  {"model": "it_test.question", "pk": 4, "fields": {"text": "게임의 스토리나 그래픽을 만드는 게 재밌다", "fields": "게임개발"}},
-  {"model": "it_test.question", "pk": 5, "fields": {"text": "센서나 기기를 다뤄서 직접 작동시키는 게 흥미롭다", "fields": "사물인터넷"}},
-  {"model": "it_test.question", "pk": 6, "fields": {"text": "데이터나 통계를 분석하는 걸 좋아한다", "fields": "빅데이터"}},
-  {"model": "it_test.question", "pk": 7, "fields": {"text": "인공지능이나 머신러닝 기술에 흥미가 있다", "fields": "인공지능"}},
-  {"model": "it_test.question", "pk": 8, "fields": {"text": "코드를 짜서 효율적으로 프로그램을 만들고 싶다", "fields": "백엔드"}},
-  {"model": "it_test.question", "pk": 9, "fields": {"text": "사용자들이 편하게 쓸 수 있는 인터페이스에 관심이 있다", "fields": "프론트엔드"}},
-  {"model": "it_test.question", "pk": 10, "fields": {"text": "새로운 기술을 탐구하고 배우는 게 즐겁다", "fields": "인공지능, 빅데이터"}}
+  {"model": "it_test.field", "pk": 1, "fields": {"name": "백엔드"}},
+  {"model": "it_test.field", "pk": 2, "fields": {"name": "프론트엔드"}},
+  {"model": "it_test.field", "pk": 3, "fields": {"name": "사이버보안"}},
+  {"model": "it_test.field", "pk": 4, "fields": {"name": "게임개발"}},
+  {"model": "it_test.field", "pk": 5, "fields": {"name": "사물인터넷"}},
+  {"model": "it_test.field", "pk": 6, "fields": {"name": "빅데이터"}},
+  {"model": "it_test.field", "pk": 7, "fields": {"name": "인공지능"}},
+
+  {"model": "it_test.question", "pk": 1, "fields": {"text": "논리적으로 문제를 해결하는 걸 좋아한다", "fields": [1]}},
+  {"model": "it_test.question", "pk": 2, "fields": {"text": "시각적인 디자인을 다루는 걸 좋아한다", "fields": [2]}},
+  {"model": "it_test.question", "pk": 3, "fields": {"text": "시스템 보안이나 해킹 방어에 관심이 있다", "fields": [3]}},
+  {"model": "it_test.question", "pk": 4, "fields": {"text": "게임의 스토리나 그래픽을 만드는 게 재밌다", "fields": [4]}},
+  {"model": "it_test.question", "pk": 5, "fields": {"text": "센서나 기기를 다뤄서 직접 작동시키는 게 흥미롭다", "fields": [5]}},
+  {"model": "it_test.question", "pk": 6, "fields": {"text": "데이터나 통계를 분석하는 걸 좋아한다", "fields": [6]}},
+  {"model": "it_test.question", "pk": 7, "fields": {"text": "인공지능이나 머신러닝 기술에 흥미가 있다", "fields": [7]}},
+  {"model": "it_test.question", "pk": 8, "fields": {"text": "코드를 짜서 효율적으로 프로그램을 만들고 싶다", "fields": [1]}},
+  {"model": "it_test.question", "pk": 9, "fields": {"text": "사용자들이 편하게 쓸 수 있는 인터페이스에 관심이 있다", "fields": [2]}},
+  {"model": "it_test.question", "pk": 10, "fields": {"text": "새로운 기술을 탐구하고 배우는 게 즐겁다", "fields": [6,7]}}
 ]

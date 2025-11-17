@@ -1,50 +1,76 @@
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect
 from rest_framework import generics
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
 from .models import User
 from .serializers import UserSerializer, MyTokenObtainPairSerializer
 
-# 회원가입
+# -----------------------------
+# HTML 렌더링
+# -----------------------------
+def register_page(request):
+    return render(request, 'accounts/register.html')
+
+def login_page(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            return redirect('board:post_list')  # 로그인 성공 → 루트 게시글 리스트
+        else:
+            return render(request, 'accounts/login.html', {'error': '아이디 또는 비밀번호가 잘못되었습니다.'})
+    return render(request, 'accounts/login.html')
+
+
+@csrf_exempt
+def logout_view(request):
+    logout(request)
+    return redirect('accounts:login_page')
+
+
+# -----------------------------
+# 회원가입 API
+# -----------------------------
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
-# JWT 로그인
+    def post(self, request, *args, **kwargs):
+        if request.content_type != 'application/json':
+            data = {
+                'username': request.POST.get('username'),
+                'password': request.POST.get('password'),
+                'name': request.POST.get('name'),
+                'nickname': request.POST.get('nickname'),
+                'phone': request.POST.get('phone'),
+                'gender': request.POST.get('gender'),
+                'email': request.POST.get('email'),
+                'birth_date': request.POST.get('birth_date'),
+            }
+        else:
+            data = request.data
+
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            if request.content_type != 'application/json':
+                return redirect('accounts:login_page')
+            return Response({"message": "회원가입 성공"}, status=201)
+        return Response(serializer.errors, status=400)
+
+
+# -----------------------------
+# JWT 로그인 API
+# -----------------------------
 class LoginView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
     permission_classes = [AllowAny]
-
-# JWT 토큰 재발급
-class TokenRefreshViewCustom(TokenRefreshView):
-    permission_classes = [AllowAny]
-
-# 로그아웃 (Refresh token 블랙리스트)
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        refresh_token = request.data.get("refresh")
-        if not refresh_token:
-            return Response({"error": "refresh token required"}, status=400)
-        try:
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            return Response({"message": "Logged out"}, status=205)
-        except Exception:
-            return Response({"error": "Invalid refresh token"}, status=400)
-
-# 로그인 상태 확인
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def profile(request):
-    user = request.user
-    return Response({
-        "username": user.username,
-        "email": user.email
-    })

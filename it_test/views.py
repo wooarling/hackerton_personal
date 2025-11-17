@@ -1,21 +1,32 @@
-# views.py
-from django.http import JsonResponse
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 import json
 from .models import Question, Field
 
-# JSON 반환: 모든 질문 가져오기
+# 메인 소개 페이지
+def main_page(request):
+    return render(request, 'it_test/main_test.html')
+
+# 질문 JSON 반환
 def get_questions(request):
-    # DB에서 질문 순서대로 가져오기
     questions = Question.objects.all().order_by('id')
-    
-    # Q1, Q2, ... 형식으로 매핑
-    data = {f"q{i+1}": {"id": q.id, "question": q.text} for i, q in enumerate(questions)}
-    
+    data = [
+        {
+            "id": q.id,
+            "text": q.text,
+        } for q in questions
+    ]
     return JsonResponse({"questions": data})
 
-# 제출한 응답을 처리하고 결과를 반환하는 뷰
-@csrf_exempt
+# 질문 페이지 (템플릿은 빈 상태, JS로 JSON fetch)
+def test_page(request):
+    return render(request, 'it_test/test.html')
+
+# =========================
+# 테스트 제출
+# =========================
+@csrf_exempt  # CSRF 토큰 없이도 제출 가능, 필요하면 제거하고 JS에서 토큰 포함
 def submit_test(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST 요청만 가능합니다."}, status=400)
@@ -23,33 +34,47 @@ def submit_test(request):
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
-        return JsonResponse({"error": "JSON 형식으로 데이터를 보내주세요."}, status=400)
+        return JsonResponse({"error": "JSON 형식으로 보내주세요."}, status=400)
 
-    # 각 분야별 점수 초기화
-    fields = Field.objects.all()  # 모든 분야 가져오기
+    fields = Field.objects.all()
     scores = {field.name: 0 for field in fields}
 
-    # 각 질문에 대한 응답 처리
-    for i, field_answer in data.items():
+    for key, answer in data.items():
+        # CSRF 토큰이 섞여 들어오면 건너뛰기
+        if key == "csrfmiddlewaretoken":
+            continue
         try:
-            question_id = int(i[1:])  # 'q1', 'q2' 등에서 숫자만 추출
+            question_id = int(key.lstrip('q'))
             question = Question.objects.get(id=question_id)
 
-            if field_answer == "예":  # '예'라면 해당 분야에 점수 추가
+            if answer.lower() in ["예", "yes", "y"]:
                 for field in question.fields.all():
-                    scores[field.name] += 1  # 해당 분야 점수 증가
-        except Exception as e:
-            return JsonResponse({"error": f"잘못된 데이터: {e}"}, status=400)
+                    scores[field.name] += 1
 
-    # 최고 점수를 가진 분야 찾기
-    max_score = max(scores.values())
-    best_fields = [field for field, score in scores.items() if score == max_score]
+        except (ValueError, Question.DoesNotExist):
+            return JsonResponse({"error": f"질문 ID {key} 처리 실패"}, status=400)
 
-    # 디버깅용 print (반환되는 데이터를 확인)
-    print("Scores:", scores)
-    print("Best Fields:", best_fields)
+    max_score = max(scores.values(), default=0)
+    best_fields = [f for f, s in scores.items() if s == max_score]
 
-    return JsonResponse({
-        "best_fields": best_fields,
-        "scores": scores
-    }, json_dumps_params={'ensure_ascii': False})
+    # 세션에 저장
+    request.session['best_fields'] = best_fields
+    request.session['scores'] = scores
+
+    return JsonResponse({"redirect_url": "/quiz/result/"})
+
+# =========================
+# 결과 페이지
+# =========================
+def result_page(request):
+    best_fields = request.session.get('best_fields', [])
+    scores = request.session.get('scores', {})
+
+    # 세션 데이터 없으면 메인 페이지로
+    if not best_fields or not scores:
+        return redirect('it_test:main_page')
+
+    return render(request, 'it_test/result.html', {
+        'best_fields': best_fields,
+        'scores': scores
+    })

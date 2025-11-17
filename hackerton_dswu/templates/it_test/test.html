@@ -1,0 +1,143 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>IT 테스트</title>
+    <style>
+        .question-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #000;
+        }
+
+        .question-text {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            margin-right: 20px;
+        }
+
+        .choice-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .choice-group input[type="radio"] {
+            display: none;
+        }
+
+        .choice-group label {
+            font-size: 16px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            background-color: #5d69b880;
+            color: #fff;
+            transition: 0.2s;
+        }
+
+        .choice-group input[type="radio"]:checked + label {
+            background-color: #0217c2;
+            color: #fff;
+        }
+
+        #quiz-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .submit_area {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>IT 분야 적성 테스트</h1>
+
+    <form id="quiz-form">
+        {% csrf_token %}
+        <div id="questions"></div>
+        <div class="submit_area">
+            <button type="submit">제출</button>
+        </div>
+    </form>
+
+    <script>
+        // 질문 불러오기
+        async function loadQuestions() {
+            try {
+                const res = await fetch("{% url 'it_test:get_questions' %}");
+                const data = await res.json();
+                const container = document.getElementById("questions");
+
+                data.questions.forEach(q => {
+                    const div = document.createElement("div");
+                    div.className = "question-item";
+                    div.innerHTML = `
+                        <div class="question-text">${q.text}</div>
+                        <div class="choice-group">
+                            <input type="radio" name="q${q.id}" id="q${q.id}-yes" value="예">
+                            <label for="q${q.id}-yes">예</label>
+                            <input type="radio" name="q${q.id}" id="q${q.id}-no" value="아니오">
+                            <label for="q${q.id}-no">아니오</label>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (err) {
+                console.error("질문 불러오기 실패:", err);
+                document.getElementById("questions").innerHTML = "<p>질문을 불러올 수 없습니다.</p>";
+            }
+        }
+
+        // 제출 처리
+        document.getElementById("quiz-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // 모든 질문이 답변되었는지 확인
+            const questions = document.querySelectorAll(".question-item");
+            for (const q of questions) {
+                const radios = q.querySelectorAll('input[type="radio"]');
+                if (![...radios].some(r => r.checked)) {
+                    alert("모든 질문에 답변해주세요!");
+                    return; // 제출 중단
+                }
+            }
+
+            // FormData를 JSON으로 변환
+            const formData = new FormData(e.target);
+            const data = {};
+            formData.forEach((value, key) => data[key] = value);
+
+            try {
+                const res = await fetch("{% url 'it_test:submit_test' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (res.ok && result.redirect_url) {
+                    window.location.href = result.redirect_url;
+                } else {
+                    alert("제출 실패: " + (result.error || JSON.stringify(result)));
+                }
+            } catch (err) {
+                console.error("제출 중 오류:", err);
+                alert("제출 실패: 서버와 통신할 수 없습니다.");
+            }
+        });
+
+        loadQuestions();
+    </script>
+</body>
+</html>

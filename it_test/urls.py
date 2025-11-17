@@ -1,12 +1,12 @@
-# it_test/urls.py
-
-from django.urls import path, include
+from django.urls import path
 from . import views
 
-urlpatterns = [
-    path('', views.get_questions, name='get_questions'),  # /questions/
-    path('submit/', views.submit_test, name='submit_test'),  # /questions/submit/
+app_name = 'it_test'  # ← 반드시 추가
 
-    
-    path('events/', include('events.urls')),  # events 앱의 URL들을 포함
+urlpatterns = [
+    path('', views.main_page, name='main_page'),
+    path('test/', views.test_page, name='test_page'),
+    path('questions/', views.get_questions, name='get_questions'),
+    path('submit/', views.submit_test, name='submit_test'),
+    path('result/', views.result_page, name='result_page'),
 ]
